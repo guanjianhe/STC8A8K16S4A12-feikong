@@ -1,0 +1,7 @@
+".\list\EEPROM.obj",
+".\list\MPU-6050.obj",
+".\list\AD.obj",
+".\list\STC8xxx_PWM.obj",
+".\list\ËÄÖá·É¿Ø-PPM-V10.obj" 
+TO ".\list\aux4" 
+PRINT(".\list\aux4.m51") RAMSIZE(256) 

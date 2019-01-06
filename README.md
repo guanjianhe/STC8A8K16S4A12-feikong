@@ -1,0 +1,2 @@
+# --STC8A8K16S4A12-LQFP44-PPM-V10
+stc8，四轴代码

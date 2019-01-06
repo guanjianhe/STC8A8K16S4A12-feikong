@@ -1,0 +1,87 @@
+C51 COMPILER V7.07   AD                                                                    08/23/2017 13:55:53 PAGE 1   
+
+
+C51 COMPILER V7.07, COMPILATION OF MODULE AD
+OBJECT MODULE PLACED IN .\list\AD.obj
+COMPILER INVOKED BY: D:\Keil\C51\BIN\C51.EXE AD.C BROWSE DEBUG OBJECTEXTEND PRINT(.\list\AD.lst) OBJECT(.\list\AD.obj)
+
+stmt level    source
+
+   1          
+   2          #include "config.h"
+   3          #include "AD.H"                 
+   4          
+   5          int     xdata Battery = 1200;
+   6          u16 xdata ADC0_Last = 6400;
+   7          u16 xdata adc0;
+   8          
+   9          #define ADC_START       (1<<6)  /* 自动清0 */
+  10          #define ADC_FLAG        (1<<5)  /* 软件清0 */
+  11          
+  12          #define ADC_SPEED       3               /* 0~15, ADC转换时间(CPU时钟数) = (n+1)*32  ADCCFG */
+  13          #define RES_FMT         (1<<5)  /* ADC结果格式 0: 左对齐, ADC_RES: D11 D10 D9 D8 D7 D6 D5 D4, ADC_RESL: D3 D2 D1 D
+             -0 0 0 0 0 */
+  14                                                                  /* ADCCFG      1: 右对齐, ADC_RES: 0 0 0 0 D11 D10 D9 D8, ADC_RESL: D7 D6 D5 D4 D3 D2 D1 D0 */
+  15          
+  16          
+  17          
+  18          //*********************************初始化A/D转换*************************************************
+  19          void adc_init()
+  20          {
+  21   1              P0n_pure_input(0x04);   //将P0.2作为模拟量输入
+  22   1              ADC_CONTR = 0x80;               //ADC on
+  23   1              ADCCFG = RES_FMT + ADC_SPEED;
+  24   1      }
+  25          
+  26          //========================================================================
+  27          // 函数: u16    Get_ADC12bitResult(u8 channel)
+  28          // 描述: 查询法读一次ADC结果.
+  29          // 参数: channel: 选择要转换的ADC.
+  30          // 返回: 10位ADC结果.
+  31          // 版本: V1.0, 2016-4-28
+  32          //========================================================================
+  33          u16     Get_ADC12bitResult(u8 channel)  //channel = 0~7
+  34          {
+  35   1              u8      i;
+  36   1              ADC_RES = 0;
+  37   1              ADC_RESL = 0;
+  38   1      
+  39   1              ADC_CONTR = 0x80 | ADC_START | channel; 
+  40   1              NOP(10);                        //
+  41   1              i = 250;
+  42   1              do
+  43   1              {
+  44   2                      if((ADC_CONTR & ADC_FLAG) != 0) //ADC结束
+  45   2                      {
+  46   3                              ADC_CONTR &= ~ADC_FLAG;
+  47   3                              return  ((u16)ADC_RES * 256 + (u16)ADC_RESL);
+  48   3                      }
+  49   2              }
+  50   1              while(--i);
+  51   1              return 0;
+  52   1      }
+  53          
+  54          //**********************************电压处理***************************************
+C51 COMPILER V7.07   AD                                                                    08/23/2017 13:55:53 PAGE 2   
+
+  55          void AD(void)
+  56          {
+  57   1              ADC0_Last = ((ADC0_Last * 3) >> 2) + Get_ADC12bitResult(10);
+  58   1      
+  59   1              adc0 = ADC0_Last >> 2;
+  60   1              Battery = (int)((float)ADC0_Last * 0.08904f);   //78M05输出4.964V做ADC基准
+  61   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    164    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =      6    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
